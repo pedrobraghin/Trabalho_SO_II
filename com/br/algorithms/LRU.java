@@ -1,3 +1,4 @@
+
 package com.br.algorithms;
 
 
@@ -56,18 +57,18 @@ public class LRU extends Algorithm {
     public void simulate() {
         Page page;
         loadMemory();
-        super.generatePages();
+        generatePages();
         generatePageRequest();
         for (int i = 0; i < this.numPagReq; i++) {
             if (this.inicioFilaFrames != numFrames) {
                 if (pilhaFrames.length == 0) {
-                    page = super.searchPageFile(PagReq[i]);
+                    page = searchPageFile(PagReq[i]);
                     addPage(PagReq[i], page);
                     nFalhas++;
                 } else {
                     int busca = searchPage(PagReq[i]);
                     if (busca == -1) {
-                        page = super.searchPageFile(PagReq[i]);
+                        page = searchPageFile(PagReq[i]);
                         addPage(PagReq[i] ,page);
                         nFalhas++;
                     } else {
@@ -78,7 +79,7 @@ public class LRU extends Algorithm {
                 int busca = searchPage(PagReq[i]);
 
                 if (busca == -1) {
-                    page = super.searchPageFile(PagReq[i]);
+                    page = searchPageFile(PagReq[i]);
                     changePage(PagReq[i], page);
                     nFalhas++;
                 } else {
@@ -202,28 +203,8 @@ public class LRU extends Algorithm {
         }
         this.isRunning = true;
     }
- 
 
-    public int searchPage(int pagina) {
-        int frame = -1;
-        if (topo_frames == -1) {
-            return frame;
-        }
-        for (int i = 0; i <= topo_frames; i++) {
-            if (memory.getMemory()[pilhaFrames[i]].getNumber() == pagina) {
-                return i;
-            }
-        }
-        return frame;
-    }
-
-    public void loadMemory() {
-        for (int i = 0; i < numFrames; i++) {
-            memory.getMemory()[i] = new Frame();
-        }
-    }
-    
-    public  String populatePages(){
+    public String populatePages() {
         String content = "";
         Random rand = new Random();
         int number;
@@ -250,8 +231,8 @@ public class LRU extends Algorithm {
         }
         return content;
     }
-    
-    public  void generatePages(){
+
+   public  void generatePages(){
         for (int i = 0; i < this.uniquePages; i++) {
             File file = new File(this.pagesPath + i + ".pag");
             try {
@@ -264,8 +245,27 @@ public class LRU extends Algorithm {
             }
         }
     }
-    
-    public Page searchPageFile(int pageNumber) {
+
+    public int searchPage(int pagina) {
+        int frame = -1;
+        if (topo_frames == -1) {
+            return frame;
+        }
+        for (int i = 0; i <= topo_frames; i++) {
+            if (memory.getMemory()[pilhaFrames[i]].getNumber() == pagina) {
+                return i;
+            }
+        }
+        return frame;
+    }
+
+    public void loadMemory() {
+        for (int i = 0; i < numFrames; i++) {
+            memory.getMemory()[i] = new Frame();
+        }
+    }
+
+    private Page searchPageFile(int pageNumber) {
         Page page = null;
         String path = pagesPath + pageNumber + ".pag";
         try {
@@ -282,5 +282,4 @@ public class LRU extends Algorithm {
 
         return page;
     }
-    
 }
