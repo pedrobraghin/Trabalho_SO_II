@@ -1,161 +1,229 @@
 package com.br.algorithms;
 
-import java.io.File;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+
+import com.br.pages.Page;
+import com.br.frames.Frame;
+import com.br.frames.Memory;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
-
-import com.br.pages.Page;
-import com.br.pages.SCPageNode;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * @author Pedro Braghin
+ *
+ * @author murilo
  */
-public class SecondChance extends Algorithm {
+public class LRU extends Algorithm {
 
-    private SCPageNode list;
+    private Memory memory;
     private String pagesPath;
-    private int[] referenceString;
-    private int framesNum;
-    private int loadedPages = 0;
-    private int uniquePages;
-    private int requiredPages;
-    private int pageFaults = 0;
+    private int numPagReq;
+    private int numPagUnicas;
+    private int numFrames;
+    private int[] PagReq;
+    private int inicioFilaFrames = 0;
+    private int[] pilhaFrames;
+    private int topo_frames = -1;
+    private int[] pilhaAux;
+    private int topoAux = -1;
+    private int nFalhas = 0;
     private boolean isRunning;
 
-    public SecondChance(String pagesPath, int framesNum, int uniquePages, int requiredPages) {
-        this.pagesPath = pagesPath;
-        this.framesNum = framesNum;
-        this.uniquePages = uniquePages;
-        this.requiredPages = requiredPages;
-        this.list = new SCPageNode();
-        this.list.next = list;
-        this.list.prev = list;
-        this.list.setPageNumber(-1);
-        this.referenceString = new int[requiredPages];
+    public LRU(String pagesPath, int numFrames, int numPagUnicas, int numPagReq) {
+        this.memory = new Memory(numFrames);
+        this.pagesPath = pagesPath + "\\";
+        this.numPagReq = numPagReq;
+        this.numPagUnicas = numPagUnicas;
+        this.numFrames = numFrames;
+        this.memory = new Memory(numFrames);
+        pilhaFrames = new int[numFrames];
+        pilhaAux = new int[numFrames];
+        PagReq = new int[numPagReq];
     }
 
     @Override
+    public boolean isRunning() {
+        return this.isRunning;
+    }
+
+    
+    @Override
     public void simulate() {
-        boolean hitted = false;
-        SCPageNode temp = this.list.next;
         Page page;
-        generatePages();
-        generateReferenceString();
-        this.isRunning = true;
-        for (int i = 0; i < this.requiredPages; i++) {
-            if (temp != null) {
-                hitted = searchPage(referenceString[i]);
-                if (!hitted) {
-                    this.pageFaults++;
-                    page = searchPageFile(referenceString[i]);
-                    if (page != null) {
-                        if (loadedPages < framesNum) {
-                            insertPage(page, referenceString[i]);
-                            loadedPages++;
-                        } else {
-                            replacePage(page, referenceString[i]);
-                        }
+        loadMemory();
+        super.generatePages();
+        generatePageRequest();
+        for (int i = 0; i < this.numPagReq; i++) {
+            if (this.inicioFilaFrames != numFrames) {
+                if (pilhaFrames.length == 0) {
+                    page = super.searchPageFile(PagReq[i]);
+                    addPage(PagReq[i], page);
+                    nFalhas++;
+                } else {
+                    int busca = searchPage(PagReq[i]);
+                    if (busca == -1) {
+                        page = super.searchPageFile(PagReq[i]);
+                        addPage(PagReq[i] ,page);
+                        nFalhas++;
                     } else {
-                        System.err.println("Could not find page " + referenceString[i] + " in " + pagesPath);
+                        updateStacks(PagReq[i]);
                     }
                 }
             } else {
-                if(temp == null) {
-                    this.pageFaults++;
-                    page = searchPageFile(referenceString[i]);
-                    if (page != null) {
-                        if (loadedPages < framesNum) {
-                            insertPage(page, referenceString[i]);
-                            loadedPages++;
-                        } else {
-                            replacePage(page, referenceString[i]);
-                        }
-                    } else {
-                        System.err.println("Could not find page " + referenceString[i] + " in " + pagesPath);
-                    }
+                int busca = searchPage(PagReq[i]);
+
+                if (busca == -1) {
+                    page = super.searchPageFile(PagReq[i]);
+                    changePage(PagReq[i], page);
+                    nFalhas++;
+                } else {
+                    updateStacks(PagReq[i]);
                 }
             }
-
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                System.err.println("InterruptedException on page " + i + ": " + e.getMessage());
+            } catch (InterruptedException ex) {
+                Logger.getLogger(LRU.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         this.isRunning = false;
     }
 
-    public void replacePage(Page page, int pageNumber) {
-        SCPageNode temp = list;
-        boolean selectedToRemove = false;
+    @Override
+    public String getRelatory() {
+        String relatory = "";
+        relatory += memory.toString();
 
-        while (!selectedToRemove) {
-            if (temp.getReferenced() == 1) {
-                temp.setReferenced(0);
-                temp = temp.prev;
-            } else {
-                selectedToRemove = true;
+        relatory += "\nAlgoritmo de Substituição de Páginas: LRU\n";
+        relatory += "Sequência de Requisição: ";
+        for (int i : PagReq) {
+            relatory += i + " ";
+        }
+        relatory += "\n";
+        relatory += "Total de Falhas de Página: " + nFalhas;
+
+        return relatory;
+    }
+
+    public int dequeueMemory() {
+        int pos = this.inicioFilaFrames;
+        this.inicioFilaFrames++;
+        return pos;
+    }
+
+    public int unstackFrame() {
+        int pos = -1;
+
+        if (this.topo_frames != -1) {
+            pos = pilhaFrames[this.topo_frames];
+            this.topo_frames--;
+        }
+        return pos;
+    }
+
+    public void stackFrame(int x) {
+
+        if (this.topo_frames != this.numFrames - 1) {
+            this.topo_frames++;
+            this.pilhaFrames[topo_frames] = x;
+        }
+
+    }
+
+    public int unstackAux() {
+        int pos = -1;
+
+        if (this.topoAux != -1) {
+            pos = pilhaAux[this.topoAux];
+            this.topoAux--;
+        }
+
+        return pos;
+    }
+
+    public void stackAux(int x) {
+
+        if (this.topoAux != this.numFrames - 1) {
+            this.topoAux++;
+            this.pilhaAux[topoAux] = x;
+        }
+
+    }
+
+    public void updateFrame(int nFrame, int numPag,Page pagina) {
+        memory.getMemory()[nFrame].setNumber(numPag);
+        memory.getMemory()[nFrame].setPage(pagina);
+    }
+
+    public void addPage(int numPage, Page pagina) {
+        int nFrame = dequeueMemory();
+
+        stackFrame(nFrame);
+        updateFrame(nFrame, numPage, pagina);
+    }
+
+    public void updateStacks(int x) {
+
+        int temp = unstackFrame();
+
+        while (memory.getMemory()[temp].getNumber() != x) {
+            stackAux(temp);
+            temp = unstackFrame();
+        }
+
+        while (topoAux != -1) {
+            stackFrame(unstackAux());
+        }
+
+        stackFrame(temp);
+    }
+
+    public void changePage(int numPage, Page page) {
+        while (topo_frames != 0) {
+            stackAux(unstackFrame());
+        }
+        int nFrame = unstackFrame();
+        while (topoAux != -1) {
+            stackFrame(unstackAux());
+        }
+        stackFrame(nFrame);
+        updateFrame(nFrame, numPage, page);
+    }
+
+    public void generatePageRequest() {
+        Random random = new Random();
+        for (int i = 0; i < this.numPagReq; i++) {
+            PagReq[i] = random.nextInt(this.numPagUnicas);
+        }
+        this.isRunning = true;
+    }
+ 
+
+    public int searchPage(int pagina) {
+        int frame = -1;
+        if (topo_frames == -1) {
+            return frame;
+        }
+        for (int i = 0; i <= topo_frames; i++) {
+            if (memory.getMemory()[pilhaFrames[i]].getNumber() == pagina) {
+                return i;
             }
         }
-        temp.prev.next = temp.next;
-        temp.next.prev = temp.prev;
-        insertPage(page, pageNumber);
+        return frame;
     }
 
-    public void insertPage(Page page, int pageNumber) {
-        SCPageNode newNode = new SCPageNode(page, pageNumber);
-
-        newNode.next = list.next;
-        newNode.prev = list.prev;
-        this.list.prev.next = newNode;
-        this.list.next.prev = newNode;
-        this.list.next = newNode;
-        // this.head = this.list.prev;
-    }
-
-    private void generateReferenceString() {
-        this.referenceString = new int[this.requiredPages];
-        Random rand = new Random();
-        for (int i = 0; i < this.requiredPages; i++) {
-            referenceString[i] = rand.nextInt(this.uniquePages - 1);
+    public void loadMemory() {
+        for (int i = 0; i < numFrames; i++) {
+            memory.getMemory()[i] = new Frame();
         }
     }
-
-    private boolean searchPage(int pageNumber) {
-        SCPageNode temp = this.list.next;
-        boolean hitted = false;
-        int count = 0;
-
-        while (temp != null && !hitted && count < this.framesNum) {
-            if (temp.getPageNumber() == pageNumber) {
-                hitted = true;
-            } else {
-                temp = temp.next;
-            }
-            count++;
-        }
-
-        return hitted;
-    }
-
-    public void generatePages() {
-        for (int i = 0; i < uniquePages; i++) {
-            File file = new File(this.pagesPath + i + ".pag");
-            try {
-                file.createNewFile();
-                FileWriter writer = new FileWriter(file);
-                writer.write(populatePages());
-                writer.close();
-            } catch (IOException e) {
-                System.err.println("Error generating page " + i + ": " + e.getMessage());
-            }
-        }
-    }
-
-    public String populatePages() {
+    
+    public  String populatePages(){
         String content = "";
         Random rand = new Random();
         int number;
@@ -182,10 +250,24 @@ public class SecondChance extends Algorithm {
         }
         return content;
     }
-
-    private Page searchPageFile(int pageNumber) {
+    
+    public  void generatePages(){
+        for (int i = 0; i < this.uniquePages; i++) {
+            File file = new File(this.pagesPath + i + ".pag");
+            try {
+                file.createNewFile();
+                FileWriter writer = new FileWriter(file);
+                writer.write(populatePages());
+                writer.close();
+            } catch (IOException e) {
+                System.err.println("Error generating page " + i + ": " + e.getMessage());
+            }
+        }
+    }
+    
+    public Page searchPageFile(int pageNumber) {
         Page page = null;
-        String path = pagesPath + "\\" + pageNumber + ".pag";
+        String path = pagesPath + pageNumber + ".pag";
         try {
             FileReader reader = new FileReader(path);
             char[] buffer = new char[10];
@@ -200,33 +282,5 @@ public class SecondChance extends Algorithm {
 
         return page;
     }
-
-    @Override
-    public String getRelatory() {
-        String relatory = "Frame\tPágina\tConteúdo\n";
-        SCPageNode temp = list.next;
-        for(int i = 0; i < framesNum; i++) {
-            if(temp != null && temp.getPageNumber() != -1){
-                relatory += i + "\t" + temp.getPageNumber() + "\t" + temp.getPage().toString() + "\n";
-                temp = temp.next;
-            } else {
-                relatory += "" + i + "\t-" + "\t----------\n";    
-            }
-        }
-        relatory += "Algoritmo de substituição de páginas: Second Chance\n";
-        relatory += "Sequência de Requisição: ";
-        for(int i = 0; i < this.referenceString.length; i++) {
-            relatory += this.referenceString[i] + " ";
-        }
-        relatory += "\nTotal de Falhas de Página: " + this.pageFaults;
-
-        return relatory;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return this.isRunning;
-    }
-
+    
 }
-
