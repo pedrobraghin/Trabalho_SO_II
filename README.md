@@ -29,10 +29,11 @@
     Em alguns casos, o arquivo <span style="color:yellow">MANIFEST.MF</span> presente na pasta <span style="color:yellow">META-INF </span> pode ser substituído por um novo arquivo criado pela JVM do Java.
     Isso pode causar o erro <span style="color:yellow">"ClassNotFoundException"</span>.
 
-    Para resolver esse problema, abra o arquivo <span style="color:yellow">".jar"</span> gerado na instruções anteriores utilizando um descompactor de arquivos, como por exemplo o <span style="color:yellow">"Winrar"</span>. Entre na <span style="color:yellow">META-INF</span> e abra o arquivo <span style="color:yellow">MANIFEST.MF</span> com um editor de texto de sua preferência. Verifique se o arquivo contém a seguinte linha:
+    Para resolver esse problema, abra o arquivo <span style="color:yellow">".jar"</span> gerado na instruções anteriores utilizando um descompactor de arquivos, como por exemplo o <span style="color:yellow">"Winrar"</span>. Entre na pasta <span style="color:yellow">META-INF</span> e abra o arquivo <span style="color:yellow">MANIFEST.MF</span> com um editor de texto de sua preferência. Verifique se o arquivo contém a seguinte linha:
 
         Main-Class: com.br.Main
 
-    Caso não exista, <span style="color:yellow">crie uma nova linha exatamente idêntica</span> a linha acima, salve o arquivo <span style="color:yellow">MANIFEST.MF</span>. Salve o arquivo <span style="color:yellow"> .jar</span> e execute novamente.
+    Caso não exista, <span style="color:yellow">crie uma nova linha exatamente idêntica</span> a linha acima, salve o arquivo <span style="color:yellow">MANIFEST.MF</span>. Salve o arquivo <span style="color:yellow"> .jar</span>.
+    Após inserir a nova linha, deixe uma linha em branco na última linha. Isso é necessário para a JVM compreender o arquivo MANIFEST
 
 
