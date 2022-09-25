@@ -1,8 +1,6 @@
 package com.br.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
@@ -22,14 +20,14 @@ public class FIFO extends Algorithm{
     private int maxSize;
     private int pageFaults;
     private int mostOldestPageIndex = 0;
-    private int uniquePages = 0;
     private int frameNum;
     private int[] referenceString;
-    private String pagesPath;
+    private int loadedPages;
     private boolean isRunning;
     private String report;
 
     public FIFO(String pagesPath, int framesNum, int uniquePages, int requiredPages) {
+        super(pagesPath, uniquePages);
         this.pagesPath = pagesPath;
         this.framesMap = new FrameMap[framesNum];
         this.frameNum = framesNum;
@@ -192,6 +190,7 @@ public class FIFO extends Algorithm{
         // if found a free position, a new page is allocated to that frame
         if (count < maxSize) {
             framesMap[count] = new FrameMap(pageNumber, insertPage(page, pageNumber));
+            loadedPages++;
         } else {
             // otherwise, select the position that contatins the most oldest page added to
             // the frames vector
@@ -263,31 +262,6 @@ public class FIFO extends Algorithm{
         return content;
     }
 
-    /**
-     * Searches a page named by "pageNumber" parameter in the path given by
-     * parameter. Returns the page content if found. Otherwise, return null.
-     * 
-     * @param path
-     * @param pageNumber
-     * @return
-     */
-    private Page searchPageFile(int pageNumber) {
-        Page page = null;
-        String path = pagesPath + pageNumber + ".pag";
-        try {
-            FileReader reader = new FileReader(path);
-            char[] buffer = new char[10];
-            reader.read(buffer);
-            reader.close();
-            page = new Page(buffer);
-        } catch (FileNotFoundException e) {
-            System.err.println("Error reading page " + pageNumber + ": Page not found!");
-        } catch (IOException e) {
-            System.err.println("Error reading page " + pageNumber + ": IOException");
-        }
-
-        return page;
-    }
 
     /**
      * Adds a new page in the beginning of the list.
@@ -341,13 +315,9 @@ public class FIFO extends Algorithm{
     @Override
     public String getReport() {
         report = "Frame\tPágina\tConteúdo\n";
-        for (int i = 0; i < framesMap.length; i++) {
-            if (framesMap[i] != null) {
-                String data = new String(framesMap[i].getPageNode().getPage().getData());
-                report += "" + i + "\t" + framesMap[i].getPageNode().getPageNumber() + "\t" + data + "\n";
-            } else {
-                report += "" + i + "\t-" + "\t----------\n";
-            }
+        for (int i = 0; i < loadedPages; i++) {
+            String data = new String(framesMap[i].getPageNode().getPage().getData());
+            report += "" + i + "\t" + framesMap[i].getPageNode().getPageNumber() + "\t" + data + "\n";
         }
         return report;
     }

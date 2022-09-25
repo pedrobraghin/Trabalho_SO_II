@@ -1,8 +1,6 @@
 package com.br.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
@@ -16,17 +14,16 @@ import com.br.pages.SCPageNode;
 public class SecondChance extends Algorithm {
 
     private SCPageNode list;
-    private String pagesPath;
     private int[] referenceString;
     private int framesNum;
     private int loadedPages = 0;
-    private int uniquePages;
     private int requiredPages;
     private int pageFaults = 0;
     private boolean isRunning;
     private String report;
 
     public SecondChance(String pagesPath, int framesNum, int uniquePages, int requiredPages) {
+        super(pagesPath, uniquePages);
         this.pagesPath = pagesPath;
         this.framesNum = framesNum;
         this.uniquePages = uniquePages;
@@ -202,24 +199,6 @@ public class SecondChance extends Algorithm {
             content += (char) number;
         }
         return content;
-    }
-
-    private Page searchPageFile(int pageNumber) {
-        Page page = null;
-        String path = pagesPath + "\\" + pageNumber + ".pag";
-        try {
-            FileReader reader = new FileReader(path);
-            char[] buffer = new char[10];
-            reader.read(buffer);
-            reader.close();
-            page = new Page(buffer);
-        } catch (FileNotFoundException e) {
-            System.err.println("Error reading page " + pageNumber + ": Page not found!");
-        } catch (IOException e) {
-            System.err.println("Error reading page " + pageNumber + ": IOException");
-        }
-
-        return page;
     }
 
     @Override

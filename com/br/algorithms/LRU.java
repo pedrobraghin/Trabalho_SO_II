@@ -1,8 +1,4 @@
-
 package com.br.algorithms;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 
 import com.br.pages.Page;
 import com.br.frames.Frame;
@@ -21,9 +17,8 @@ import java.util.logging.Logger;
 public class LRU extends Algorithm {
 
     private Memory memory;
-    private String pagesPath;
+    
     private int numPagReq;
-    private int numPagUnicas;
     private int numFrames;
     private int[] PagReq;
     private int inicioFilaFrames = 0;
@@ -36,10 +31,11 @@ public class LRU extends Algorithm {
     private String report;
 
     public LRU(String pagesPath, int numFrames, int numPagUnicas, int numPagReq) {
+        super(pagesPath, numPagUnicas);
         this.memory = new Memory(numFrames);
         this.pagesPath = pagesPath + "\\";
         this.numPagReq = numPagReq;
-        this.numPagUnicas = numPagUnicas;
+        this.uniquePages = numPagUnicas;
         this.numFrames = numFrames;
         this.memory = new Memory(numFrames);
         pilhaFrames = new int[numFrames];
@@ -196,7 +192,7 @@ public class LRU extends Algorithm {
     public void generatePageRequest() {
         Random random = new Random();
         for (int i = 0; i < this.numPagReq; i++) {
-            PagReq[i] = random.nextInt(this.numPagUnicas);
+            PagReq[i] = random.nextInt(this.uniquePages);
         }
         this.isRunning = true;
     }
@@ -230,7 +226,7 @@ public class LRU extends Algorithm {
     }
 
     public void generatePages() {
-        for (int i = 0; i < this.numPagUnicas; i++) {
+        for (int i = 0; i < this.uniquePages; i++) {
             File file = new File(this.pagesPath + i + ".pag");
             try {
                 file.createNewFile();
@@ -260,24 +256,6 @@ public class LRU extends Algorithm {
         for (int i = 0; i < numFrames; i++) {
             memory.getMemory()[i] = new Frame();
         }
-    }
-
-    private Page searchPageFile(int pageNumber) {
-        Page page = null;
-        String path = pagesPath + pageNumber + ".pag";
-        try {
-            FileReader reader = new FileReader(path);
-            char[] buffer = new char[10];
-            reader.read(buffer);
-            reader.close();
-            page = new Page(buffer);
-        } catch (FileNotFoundException e) {
-            System.err.println("Error reading page " + pageNumber + ": Page not found!");
-        } catch (IOException e) {
-            System.err.println("Error reading page " + pageNumber + ": IOException");
-        }
-
-        return page;
     }
 
     @Override
