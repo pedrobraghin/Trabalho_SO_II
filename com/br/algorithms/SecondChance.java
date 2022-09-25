@@ -1,8 +1,5 @@
 package com.br.algorithms;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Random;
 
 import com.br.pages.Page;
@@ -157,48 +154,6 @@ public class SecondChance extends Algorithm {
         }
 
         return hitted;
-    }
-
-    public void generatePages() {
-        for (int i = 0; i < uniquePages; i++) {
-            File file = new File(this.pagesPath + i + ".pag");
-            try {
-                file.createNewFile();
-                FileWriter writer = new FileWriter(file);
-                writer.write(populatePages());
-                writer.close();
-            } catch (IOException e) {
-                System.err.println("Error generating page " + i + ": " + e.getMessage());
-            }
-        }
-    }
-
-    public String populatePages() {
-        String content = "";
-        Random rand = new Random();
-        int number;
-        for (int i = 0; i < 10; i++) {
-            number = rand.nextInt(122);
-            if (number < 65 && number > 57) {
-                if ((Math.random()) < 0.5) {
-                    number = 65;
-                } else {
-                    number = 48;
-                }
-            } else if (number < 48) {
-                if ((Math.random()) < 0.5)
-                    number = 56;
-                else
-                    number = 52;
-            } else if (number > 90 && number < 97) {
-                if ((Math.random()) < 0.5)
-                    number = 83;
-                else
-                    number = 75;
-            }
-            content += (char) number;
-        }
-        return content;
     }
 
     @Override
