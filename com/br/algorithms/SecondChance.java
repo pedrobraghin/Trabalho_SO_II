@@ -49,13 +49,13 @@ public class SecondChance extends Algorithm {
                     if (loadedPages < framesNum) {
                         insertPage(page, referenceString[i]);
                     } else {
-                        replacePage2(page, referenceString[i]);
+                        replacePage(page, referenceString[i]);
                     }
                 } else {
                     System.err.println("Could not find page " + referenceString[i] + " in " + pagesPath);
                 }
             }
-            
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -65,13 +65,21 @@ public class SecondChance extends Algorithm {
         this.isRunning = false;
         report += "Algoritmo de substituição de páginas: Second Chance\n";
         report += "Sequência de Requisição: ";
-        for(int i = 0; i < this.referenceString.length; i++) {
+        for (int i = 0; i < this.referenceString.length; i++) {
             report += this.referenceString[i] + " ";
         }
         report += "\nTotal de Falhas de Página: " + this.pageFaults;
     }
 
-    public void replacePage2(Page page, int pageNumber) {
+    /**
+     * Looks por the most oldest page in the list. If the reference bit of the page
+     * is 1, so he is setted to 0 and the page is moved to front of the list.
+     * If the bit of the page is 0, so the page is removed and a new page is added.
+     * 
+     * @param page
+     * @param pageNumber
+     */
+    public void replacePage(Page page, int pageNumber) {
         SCPageNode temp = list.next;
         boolean selectedToRemove = false;
         while (!selectedToRemove) {
@@ -87,35 +95,26 @@ public class SecondChance extends Algorithm {
         }
         temp.prev.next = temp.next;
         temp.next.prev = temp.prev;
-        if(temp == list.next) {
+        if (temp == list.next) {
             list.next = temp.next;
-        } 
-        if(temp == list.prev) {
+        }
+        if (temp == list.prev) {
             list.prev = temp.prev;
         }
         insertPage(page, pageNumber);
     }
 
-    public void replacePage(Page page, int pageNumber) {
-        SCPageNode temp = list.prev;
-        boolean selectedToRemove = false;
-        while (!selectedToRemove) {
-            if (temp.getReferenced() == 1) {
-                temp.setReferenced(0);
-                temp = temp.prev;
-            } else {
-                selectedToRemove = true;
-            }
-        }
-        temp.setPage(page);
-        temp.setPageNumber(pageNumber);
-    }
-
+    /**
+     * Inserts a new page into the list pages.
+     * 
+     * @param page
+     * @param pageNumber
+     */
     public void insertPage(Page page, int pageNumber) {
         SCPageNode newNode = new SCPageNode(page, pageNumber);
         SCPageNode temp = list;
 
-        if(loadedPages == 0) {
+        if (loadedPages == 0) {
             newNode.prev = newNode;
             newNode.next = newNode;
             temp.next = newNode;
@@ -126,10 +125,14 @@ public class SecondChance extends Algorithm {
             temp.next.prev = newNode;
         }
         temp.prev = newNode;
-        if(loadedPages < framesNum)
+        if (loadedPages < framesNum)
             loadedPages++;
     }
 
+    /**
+     * Generates a reference String limited by the number of unique pages.
+     * The string reference is used to simulate a pages request.
+     */
     private void generateReferenceString() {
         this.referenceString = new int[this.requiredPages];
         Random rand = new Random();
@@ -138,6 +141,13 @@ public class SecondChance extends Algorithm {
         }
     }
 
+    /**
+     * Searches for a page in the pages list. If the page is not found, the fault
+     * variable is incremented. If the page is found, the reference bit is updated to 1.
+     * 
+     * @param pageNumber
+     * @return
+     */
     private boolean searchPage(int pageNumber) {
         SCPageNode temp = this.list.next;
         boolean hitted = false;
@@ -160,14 +170,16 @@ public class SecondChance extends Algorithm {
     public String getReport() {
         report = "Frame\tPágina\tReferenciado\tConteúdo\n";
         SCPageNode temp = list.next;
-        for(int i = 0; i < loadedPages; i++) {
-            report += i + "\t" + temp.getPageNumber() + "\t" + temp.getReferenced() + "\t" + temp.getPage().toString() + "\n";
+        for (int i = 0; i < loadedPages; i++) {
+            report += i + "\t" + temp.getPageNumber() + "\t" + temp.getReferenced() + "\t" + temp.getPage().toString()
+                    + "\n";
             temp = temp.next;
         }
 
         return report;
     }
 
+    @Override
     public String getResults() {
         return this.report;
     }

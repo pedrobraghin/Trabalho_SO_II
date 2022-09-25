@@ -16,8 +16,15 @@ public abstract class Algorithm {
     protected String pagesPath;
     protected int uniquePages;
 
+    /**
+     * Creates a new algorithm instance and simulates the function of the algorithm.
+     */
     public abstract void simulate();
 
+    /**
+     * This method is used by the GUI to knows when the algorithm is running. It is called to update the Report Window.
+     * @return
+     */
     public abstract boolean isRunning();
 
     public Algorithm(String pagesPath, int uniquePages) {
@@ -95,7 +102,7 @@ public abstract class Algorithm {
      * 
      * @param path
      * @param pageNumber
-     * @return
+     * @return Page
      */
 
     protected Page searchPageFile(int pageNumber) {
@@ -115,6 +122,19 @@ public abstract class Algorithm {
 
         return page;
     }
+
+    /**
+     * Return the content of memory used by the algorithms.
+     * 
+     * @return String
+     */
     public abstract String getReport();
+
+    /**
+     * Return the most updated content of memory used by the algorithms, the
+     * reference string and the total of page faults.
+     * 
+     * @return String
+     */
     public abstract String getResults();
 }
