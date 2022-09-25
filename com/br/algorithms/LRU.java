@@ -31,7 +31,7 @@ public class LRU extends Algorithm {
     public LRU(String pagesPath, int numFrames, int numPagUnicas, int numPagReq) {
         super(pagesPath, numPagUnicas);
         this.memory = new Memory(numFrames);
-        this.pagesPath = pagesPath + "\\";
+        this.pagesPath = pagesPath;
         this.numPagReq = numPagReq;
         this.uniquePages = numPagUnicas;
         this.numFrames = numFrames;
