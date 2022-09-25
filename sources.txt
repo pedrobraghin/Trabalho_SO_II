@@ -6,7 +6,7 @@
 "com/br/frames/Frame.java"
 "com/br/frames/Memory.java"
 "com/br/gui/Window.java"
-"com/br/gui/RelatoryWindow.java"
+"com/br/gui/ReportWindow.java"
 "com/br/pages/Page.java"
 "com/br/pages/PageNode.java"
 "com/br/pages/SCPageNode.java"
