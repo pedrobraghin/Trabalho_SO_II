@@ -52,7 +52,7 @@ public class SecondChance extends Algorithm {
                     if (loadedPages < framesNum) {
                         insertPage(page, referenceString[i]);
                     } else {
-                        replacePage(page, referenceString[i]);
+                        replacePage2(page, referenceString[i]);
                     }
                 } else {
                     System.err.println("Could not find page " + referenceString[i] + " in " + pagesPath);
@@ -74,38 +74,38 @@ public class SecondChance extends Algorithm {
         report += "\nTotal de Falhas de Página: " + this.pageFaults;
     }
 
-    // public void replacePage(Page page, int pageNumber) {
-    //     SCPageNode temp = list.next;
-    //     boolean selectedToRemove = false;
-    //     while (!selectedToRemove) {
-    //         if (temp.getReferenced() == 1) {
-    //             temp.setReferenced(0);
-    //             temp = temp.next;
-    //         } else {
-    //             selectedToRemove = true;
-    //         }
-    //     }
-    //     temp.prev.next = temp.next;
-    //     temp.next.prev = temp.prev;
-    //     if(temp == list.next) {
-    //         list.next = temp.next;
-    //     } 
-    //     if(temp == list.prev) {
-    //         list.prev = temp.prev;
-    //     }
-    //     list.prev = temp.prev;
-    //     list.next = temp.next;
-    //     list.setPageNumber(pageNumber);
-    //     insertPage(page, pageNumber);
-    // }
-
-    public void replacePage(Page page, int pageNumber) {
+    public void replacePage2(Page page, int pageNumber) {
         SCPageNode temp = list.next;
         boolean selectedToRemove = false;
         while (!selectedToRemove) {
             if (temp.getReferenced() == 1) {
                 temp.setReferenced(0);
+                list.prev = list.prev.prev;
+                list.next.prev = list.prev;
+                insertPage(temp.getPage(), temp.getPageNumber());
                 temp = temp.next;
+            } else {
+                selectedToRemove = true;
+            }
+        }
+        temp.prev.next = temp.next;
+        temp.next.prev = temp.prev;
+        if(temp == list.next) {
+            list.next = temp.next;
+        } 
+        if(temp == list.prev) {
+            list.prev = temp.prev;
+        }
+        insertPage(page, pageNumber);
+    }
+
+    public void replacePage(Page page, int pageNumber) {
+        SCPageNode temp = list.prev;
+        boolean selectedToRemove = false;
+        while (!selectedToRemove) {
+            if (temp.getReferenced() == 1) {
+                temp.setReferenced(0);
+                temp = temp.prev;
             } else {
                 selectedToRemove = true;
             }
