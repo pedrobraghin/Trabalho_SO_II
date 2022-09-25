@@ -32,8 +32,8 @@ public class SecondChance extends Algorithm {
         this.uniquePages = uniquePages;
         this.requiredPages = requiredPages;
         this.list = new SCPageNode();
-        this.list.next = list;
-        this.list.prev = list;
+        this.list.next = null;
+        this.list.prev = null;
         this.list.setPageNumber(-1);
         this.referenceString = new int[requiredPages];
     }
@@ -54,7 +54,6 @@ public class SecondChance extends Algorithm {
                 if (page != null) {
                     if (loadedPages < framesNum) {
                         insertPage(page, referenceString[i]);
-                        loadedPages++;
                     } else {
                         replacePage(page, referenceString[i]);
                     }
@@ -78,8 +77,33 @@ public class SecondChance extends Algorithm {
         report += "\nTotal de Falhas de Página: " + this.pageFaults;
     }
 
+    // public void replacePage(Page page, int pageNumber) {
+    //     SCPageNode temp = list.next;
+    //     boolean selectedToRemove = false;
+    //     while (!selectedToRemove) {
+    //         if (temp.getReferenced() == 1) {
+    //             temp.setReferenced(0);
+    //             temp = temp.next;
+    //         } else {
+    //             selectedToRemove = true;
+    //         }
+    //     }
+    //     temp.prev.next = temp.next;
+    //     temp.next.prev = temp.prev;
+    //     if(temp == list.next) {
+    //         list.next = temp.next;
+    //     } 
+    //     if(temp == list.prev) {
+    //         list.prev = temp.prev;
+    //     }
+    //     list.prev = temp.prev;
+    //     list.next = temp.next;
+    //     list.setPageNumber(pageNumber);
+    //     insertPage(page, pageNumber);
+    // }
+
     public void replacePage(Page page, int pageNumber) {
-        SCPageNode temp = list;
+        SCPageNode temp = list.next;
         boolean selectedToRemove = false;
         while (!selectedToRemove) {
             if (temp.getReferenced() == 1) {
@@ -89,21 +113,27 @@ public class SecondChance extends Algorithm {
                 selectedToRemove = true;
             }
         }
-        temp.prev.next = temp.next;
-        temp.next.prev = temp.prev;
-        insertPage(page, pageNumber);
+        temp.setPage(page);
+        temp.setPageNumber(pageNumber);
     }
 
     public void insertPage(Page page, int pageNumber) {
         SCPageNode newNode = new SCPageNode(page, pageNumber);
+        SCPageNode temp = list;
 
-        newNode.next = list.next;
-        newNode.prev = list.prev;
-        list.prev.next = newNode;
-        list.next.prev = newNode;
-        list.prev = newNode;
-        System.out.println(list.next);
-        System.out.println(list.prev);
+        if(loadedPages == 0) {
+            newNode.prev = newNode;
+            newNode.next = newNode;
+            temp.next = newNode;
+        } else {
+            newNode.prev = list.prev;
+            newNode.next = list.next;
+            temp.prev.next = newNode;
+            temp.next.prev = newNode;
+        }
+        temp.prev = newNode;
+        if(loadedPages < framesNum)
+            loadedPages++;
     }
 
     private void generateReferenceString() {
@@ -119,7 +149,7 @@ public class SecondChance extends Algorithm {
         boolean hitted = false;
         int count = 0;
 
-        while (!hitted && count < this.framesNum) {
+        while ((temp != null) && (!hitted) && (count < this.framesNum)) {
             if (temp.getPageNumber() == pageNumber) {
                 hitted = true;
                 temp.setReferenced(1);
@@ -194,15 +224,11 @@ public class SecondChance extends Algorithm {
 
     @Override
     public String getReport() {
-        report = "Frame\tPágina\tConteúdo\n";
+        report = "Frame\tPágina\tReferenciado\tConteúdo\n";
         SCPageNode temp = list.next;
         for(int i = 0; i < loadedPages; i++) {
-            if(temp != null && temp.getPageNumber() != -1){
-                report += i + "\t" + temp.getPageNumber() + "\t" + temp.getPage().toString() + "\n";
-                temp = temp.next;
-            } else {
-                report += "" + i + "\t-" + "\t----------\n";    
-            }
+            report += i + "\t" + temp.getPageNumber() + "\t" + temp.getReferenced() + "\t" + temp.getPage().toString() + "\n";
+            temp = temp.next;
         }
 
         return report;

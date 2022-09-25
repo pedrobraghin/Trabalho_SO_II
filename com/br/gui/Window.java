@@ -91,7 +91,7 @@ public class Window extends JFrame {
         Border padding = BorderFactory.createEmptyBorder(10, 10, 10, 10);
         contentPanel.setBorder(padding);
         this.setContentPane(contentPanel);
-        this.setIconImage(new ImageIcon(getClass().getResource("/assets/icon.png")).getImage());
+        this.setIconImage(new ImageIcon(getClass().getResource("/com/br/assets/icon.png")).getImage());
     }
 
     public void initComponent() {
