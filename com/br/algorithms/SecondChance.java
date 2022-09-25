@@ -57,7 +57,7 @@ public class SecondChance extends Algorithm {
             }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(threadWait);
             } catch (InterruptedException e) {
                 System.err.println("InterruptedException on page " + i + ": " + e.getMessage());
             }
@@ -85,21 +85,20 @@ public class SecondChance extends Algorithm {
         while (!selectedToRemove) {
             if (temp.getReferenced() == 1) {
                 temp.setReferenced(0);
-                list.prev = list.prev.prev;
-                list.next.prev = list.prev;
-                insertPage(temp.getPage(), temp.getPageNumber());
                 temp = temp.next;
             } else {
                 selectedToRemove = true;
             }
         }
-        temp.prev.next = temp.next;
-        temp.next.prev = temp.prev;
         if (temp == list.next) {
             list.next = temp.next;
-        }
-        if (temp == list.prev) {
+            list.next.prev = temp.prev;
+        } else if (temp == list.prev) {
             list.prev = temp.prev;
+            list.prev.next = temp.next;
+        } else {
+            temp.prev.next = temp.next;
+            temp.next.prev = temp.prev;
         }
         insertPage(page, pageNumber);
     }
@@ -149,11 +148,11 @@ public class SecondChance extends Algorithm {
      * @return
      */
     private boolean searchPage(int pageNumber) {
-        SCPageNode temp = this.list.next;
+        SCPageNode temp = list.next;
         boolean hitted = false;
         int count = 0;
 
-        while ((temp != null) && (!hitted) && (count < this.framesNum)) {
+        while ((temp != null) && (!hitted) && (count < this.loadedPages)) {
             if (temp.getPageNumber() == pageNumber) {
                 hitted = true;
                 temp.setReferenced(1);

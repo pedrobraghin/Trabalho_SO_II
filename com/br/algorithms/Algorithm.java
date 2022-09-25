@@ -15,6 +15,7 @@ public abstract class Algorithm {
 
     protected String pagesPath;
     protected int uniquePages;
+    public static long threadWait = 1000;
 
     /**
      * Creates a new algorithm instance and simulates the function of the algorithm.

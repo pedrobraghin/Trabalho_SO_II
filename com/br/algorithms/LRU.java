@@ -80,7 +80,7 @@ public class LRU extends Algorithm {
                 }
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(threadWait);
             } catch (InterruptedException ex) {
                 Logger.getLogger(LRU.class.getName()).log(Level.SEVERE, null, ex);
             }

@@ -69,7 +69,7 @@ public class FIFO extends Algorithm{
                 }
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(threadWait);
             } catch (InterruptedException e) {
                 System.err.println("InterruptedException on page " + i + ": " + e.getMessage());
             }

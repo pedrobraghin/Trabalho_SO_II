@@ -298,7 +298,7 @@ public class Window extends JFrame {
             do {
                 try {
                     reportWindow.setText(algorithm.getReport() + "\n\n");
-                    Thread.sleep(1000);
+                    Thread.sleep(Algorithm.threadWait);
                 } catch (InterruptedException e) {
                     System.err.println("InterruptedException in updateReport: " + e.getMessage());
                 }
