@@ -27,6 +27,7 @@ public class FIFO extends Algorithm{
     private int[] referenceString;
     private String pagesPath;
     private boolean isRunning;
+    private String report;
 
     public FIFO(String pagesPath, int framesNum, int uniquePages, int requiredPages) {
         this.pagesPath = pagesPath;
@@ -74,12 +75,18 @@ public class FIFO extends Algorithm{
                 }
             }
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 System.err.println("InterruptedException on page " + i + ": " + e.getMessage());
             }
         }
         this.isRunning = false;
+        report += "Algoritmo de Substituição de Páginas: FIFO\n";
+        report += "Sequência de Requisição: "; 
+        for(int i = 0; i < this.referenceString.length; i++) {
+            report += this.referenceString[i] + " ";
+        }
+        report += "\nTotal de Falhas de Página: " + this.pageFaults;
     }
 
     /**
@@ -93,7 +100,7 @@ public class FIFO extends Algorithm{
         Random rand = new Random();
         this.referenceString = new int[this.requiredPages];
         for (int i = 0; i < this.requiredPages; i++) {
-            this.referenceString[i] = rand.nextInt(this.uniquePages - 1);
+            this.referenceString[i] = rand.nextInt(this.uniquePages);
         }
     }
 
@@ -332,28 +339,27 @@ public class FIFO extends Algorithm{
      * @return String : the relatory of all iterations.
      */
     @Override
-    public String getRelatory() {
-        String temp = "Frame\tPágina\tConteúdo\n";
+    public String getReport() {
+        report = "Frame\tPágina\tConteúdo\n";
         for (int i = 0; i < framesMap.length; i++) {
             if (framesMap[i] != null) {
                 String data = new String(framesMap[i].getPageNode().getPage().getData());
-                temp += "" + i + "\t" + framesMap[i].getPageNode().getPageNumber() + "\t" + data + "\n";
+                report += "" + i + "\t" + framesMap[i].getPageNode().getPageNumber() + "\t" + data + "\n";
             } else {
-                temp += "" + i + "\t-" + "\t----------\n";
+                report += "" + i + "\t-" + "\t----------\n";
             }
         }
-        temp += "Algoritmo de Substituição de Páginas: FIFO\n";
-        temp += "Sequência de Requisição: "; 
-        for(int i = 0; i < this.referenceString.length; i++) {
-            temp += this.referenceString[i] + " ";
-        }
-        temp += "\nTotal de Falhas de Página: " + this.pageFaults;
-        return temp;
+        return report;
     }
 
     @Override
     public boolean isRunning() {
         return this.isRunning;
+    }
+
+    @Override
+    public String getResults() {
+        return this.report;
     }
 
 }

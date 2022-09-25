@@ -1,7 +1,6 @@
 
 package com.br.algorithms;
 
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
@@ -34,6 +33,7 @@ public class LRU extends Algorithm {
     private int topoAux = -1;
     private int nFalhas = 0;
     private boolean isRunning;
+    private String report;
 
     public LRU(String pagesPath, int numFrames, int numPagUnicas, int numPagReq) {
         this.memory = new Memory(numFrames);
@@ -52,7 +52,6 @@ public class LRU extends Algorithm {
         return this.isRunning;
     }
 
-    
     @Override
     public void simulate() {
         Page page;
@@ -69,7 +68,7 @@ public class LRU extends Algorithm {
                     int busca = searchPage(PagReq[i]);
                     if (busca == -1) {
                         page = searchPageFile(PagReq[i]);
-                        addPage(PagReq[i] ,page);
+                        addPage(PagReq[i], page);
                         nFalhas++;
                     } else {
                         updateStacks(PagReq[i]);
@@ -93,22 +92,20 @@ public class LRU extends Algorithm {
             }
         }
         this.isRunning = false;
+        report += "\nAlgoritmo de Substituição de Páginas: LRU\n";
+        report += "Sequência de Requisição: ";
+        for (int i : PagReq) {
+            report += i + " ";
+        }
+        report += "\n";
+        report += "Total de Falhas de Página: " + nFalhas;
     }
 
     @Override
-    public String getRelatory() {
-        String relatory = "";
-        relatory += memory.toString();
-
-        relatory += "\nAlgoritmo de Substituição de Páginas: LRU\n";
-        relatory += "Sequência de Requisição: ";
-        for (int i : PagReq) {
-            relatory += i + " ";
-        }
-        relatory += "\n";
-        relatory += "Total de Falhas de Página: " + nFalhas;
-
-        return relatory;
+    public String getReport() {
+        report = "";
+        report += memory.toString();
+        return report;
     }
 
     public int dequeueMemory() {
@@ -156,7 +153,7 @@ public class LRU extends Algorithm {
 
     }
 
-    public void updateFrame(int nFrame, int numPag,Page pagina) {
+    public void updateFrame(int nFrame, int numPag, Page pagina) {
         memory.getMemory()[nFrame].setNumber(numPag);
         memory.getMemory()[nFrame].setPage(pagina);
     }
@@ -232,8 +229,8 @@ public class LRU extends Algorithm {
         return content;
     }
 
-   public  void generatePages(){
-        for (int i = 0; i < this.uniquePages; i++) {
+    public void generatePages() {
+        for (int i = 0; i < this.numPagUnicas; i++) {
             File file = new File(this.pagesPath + i + ".pag");
             try {
                 file.createNewFile();
@@ -281,5 +278,10 @@ public class LRU extends Algorithm {
         }
 
         return page;
+    }
+
+    @Override
+    public String getResults() {
+        return this.report;
     }
 }

@@ -64,7 +64,7 @@ public class Window extends JFrame {
 
     private JTextField pathField;
 
-    private RelatoryWindow relatoryWindow;
+    private ReportWindow reportWindow;
 
     private boolean pathSelected = false;
     private boolean isRunning = false;
@@ -227,7 +227,7 @@ public class Window extends JFrame {
         ThreadWindow threadWindow;
 
         if(this.isRunning){
-            this. relatoryWindow.setVisible(true);
+            this. reportWindow.setVisible(true);
             return;
         }
         frameNum = (int) this.frameSpinner.getValue();
@@ -235,26 +235,26 @@ public class Window extends JFrame {
         requiredPages = (int) this.requiredPagesSpinner.getValue();
         
         this.isRunning = true;
-        this.relatoryWindow = new RelatoryWindow(this);
-        this.relatoryWindow.setText("");
+        this.reportWindow = new ReportWindow(this);
+        this.reportWindow.setText("");
         this.statusLabel.setText("Gerando resultados . . . Tempo mínimo de espera: " + requiredPages + "s");
 
         if(this.fifoAlgorithmRadioButton.isSelected()) {
             this.algorithm = new FIFO(path, frameNum, uniquePages, requiredPages);
-            this.relatoryWindow.setTitle("FIFO");
-            threadWindow = new ThreadWindow(new RelatoryWindowRunnable());
+            this.reportWindow.setTitle("FIFO");
+            threadWindow = new ThreadWindow(new ReportWindowRunnable());
             threadWindow.start();
         }  
         if(this.lruAlgorithmradioButton.isSelected()) {
             this.algorithm = new LRU(path, frameNum, uniquePages, requiredPages);
-            this.relatoryWindow.setTitle("LRU");
-            threadWindow = new ThreadWindow(new RelatoryWindowRunnable());
+            this.reportWindow.setTitle("LRU");
+            threadWindow = new ThreadWindow(new ReportWindowRunnable());
             threadWindow.start();
         } 
         if(this.scAlgorithmRadioButton.isSelected()) {
             this.algorithm = new SecondChance(path, frameNum, uniquePages, requiredPages);
-            this.relatoryWindow.setTitle("Second Chance");
-            threadWindow = new ThreadWindow(new RelatoryWindowRunnable());
+            this.reportWindow.setTitle("Second Chance");
+            threadWindow = new ThreadWindow(new ReportWindowRunnable());
             threadWindow.start();
         } 
 
@@ -275,16 +275,16 @@ public class Window extends JFrame {
         this.lruAlgorithmradioButton.setEnabled(false);
         this.scAlgorithmRadioButton.setEnabled(false);
         this.selectFolderButton.setEnabled(false);
-        this.relatoryWindow.setVisible(true);
+        this.reportWindow.setVisible(true);
     }
 
     private class ThreadWindow extends Thread {
-        public ThreadWindow(RelatoryWindowRunnable runnable) {
+        public ThreadWindow(ReportWindowRunnable runnable) {
             super(runnable);
         }
     }
 
-    private class RelatoryWindowRunnable implements Runnable {
+    private class ReportWindowRunnable implements Runnable {
         @Override
         public void run() {
             disableButtons();
@@ -297,12 +297,13 @@ public class Window extends JFrame {
             executionThread.start();
             do {
                 try {
-                    relatoryWindow.setText(algorithm.getRelatory() + "\n\n");
+                    reportWindow.setText(algorithm.getReport() + "\n\n");
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    System.err.println("InterruptedException in updateRelatory: " + e.getMessage());
+                    System.err.println("InterruptedException in updateReport: " + e.getMessage());
                 }
             } while (algorithm.isRunning());
+            reportWindow.setText(algorithm.getResults() + "\n\n");
             statusLabel.setText("Execução finalizada");
             enableButtons();
             isRunning = false;

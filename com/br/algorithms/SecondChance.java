@@ -24,6 +24,7 @@ public class SecondChance extends Algorithm {
     private int requiredPages;
     private int pageFaults = 0;
     private boolean isRunning;
+    private String report;
 
     public SecondChance(String pagesPath, int framesNum, int uniquePages, int requiredPages) {
         this.pagesPath = pagesPath;
@@ -40,45 +41,28 @@ public class SecondChance extends Algorithm {
     @Override
     public void simulate() {
         boolean hitted = false;
-        SCPageNode temp = this.list.next;
         Page page;
+        loadedPages = 0;
         generatePages();
         generateReferenceString();
         this.isRunning = true;
         for (int i = 0; i < this.requiredPages; i++) {
-            if (temp != null) {
-                hitted = searchPage(referenceString[i]);
-                if (!hitted) {
-                    this.pageFaults++;
-                    page = searchPageFile(referenceString[i]);
-                    if (page != null) {
-                        if (loadedPages < framesNum) {
-                            insertPage(page, referenceString[i]);
-                            loadedPages++;
-                        } else {
-                            replacePage(page, referenceString[i]);
-                        }
+            hitted = searchPage(referenceString[i]);
+            if (!hitted) {
+                this.pageFaults++;
+                page = searchPageFile(referenceString[i]);
+                if (page != null) {
+                    if (loadedPages < framesNum) {
+                        insertPage(page, referenceString[i]);
+                        loadedPages++;
                     } else {
-                        System.err.println("Could not find page " + referenceString[i] + " in " + pagesPath);
+                        replacePage(page, referenceString[i]);
                     }
-                }
-            } else {
-                if(temp == null) {
-                    this.pageFaults++;
-                    page = searchPageFile(referenceString[i]);
-                    if (page != null) {
-                        if (loadedPages < framesNum) {
-                            insertPage(page, referenceString[i]);
-                            loadedPages++;
-                        } else {
-                            replacePage(page, referenceString[i]);
-                        }
-                    } else {
-                        System.err.println("Could not find page " + referenceString[i] + " in " + pagesPath);
-                    }
+                } else {
+                    System.err.println("Could not find page " + referenceString[i] + " in " + pagesPath);
                 }
             }
-
+            
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -86,16 +70,21 @@ public class SecondChance extends Algorithm {
             }
         }
         this.isRunning = false;
+        report += "Algoritmo de substituição de páginas: Second Chance\n";
+        report += "Sequência de Requisição: ";
+        for(int i = 0; i < this.referenceString.length; i++) {
+            report += this.referenceString[i] + " ";
+        }
+        report += "\nTotal de Falhas de Página: " + this.pageFaults;
     }
 
     public void replacePage(Page page, int pageNumber) {
         SCPageNode temp = list;
         boolean selectedToRemove = false;
-
         while (!selectedToRemove) {
             if (temp.getReferenced() == 1) {
                 temp.setReferenced(0);
-                temp = temp.prev;
+                temp = temp.next;
             } else {
                 selectedToRemove = true;
             }
@@ -110,17 +99,18 @@ public class SecondChance extends Algorithm {
 
         newNode.next = list.next;
         newNode.prev = list.prev;
-        this.list.prev.next = newNode;
-        this.list.next.prev = newNode;
-        this.list.next = newNode;
-        // this.head = this.list.prev;
+        list.prev.next = newNode;
+        list.next.prev = newNode;
+        list.prev = newNode;
+        System.out.println(list.next);
+        System.out.println(list.prev);
     }
 
     private void generateReferenceString() {
         this.referenceString = new int[this.requiredPages];
         Random rand = new Random();
         for (int i = 0; i < this.requiredPages; i++) {
-            referenceString[i] = rand.nextInt(this.uniquePages - 1);
+            referenceString[i] = rand.nextInt(this.uniquePages);
         }
     }
 
@@ -129,9 +119,10 @@ public class SecondChance extends Algorithm {
         boolean hitted = false;
         int count = 0;
 
-        while (temp != null && !hitted && count < this.framesNum) {
+        while (!hitted && count < this.framesNum) {
             if (temp.getPageNumber() == pageNumber) {
                 hitted = true;
+                temp.setReferenced(1);
             } else {
                 temp = temp.next;
             }
@@ -202,25 +193,23 @@ public class SecondChance extends Algorithm {
     }
 
     @Override
-    public String getRelatory() {
-        String relatory = "Frame\tPágina\tConteúdo\n";
+    public String getReport() {
+        report = "Frame\tPágina\tConteúdo\n";
         SCPageNode temp = list.next;
-        for(int i = 0; i < framesNum; i++) {
+        for(int i = 0; i < loadedPages; i++) {
             if(temp != null && temp.getPageNumber() != -1){
-                relatory += i + "\t" + temp.getPageNumber() + "\t" + temp.getPage().toString() + "\n";
+                report += i + "\t" + temp.getPageNumber() + "\t" + temp.getPage().toString() + "\n";
                 temp = temp.next;
             } else {
-                relatory += "" + i + "\t-" + "\t----------\n";    
+                report += "" + i + "\t-" + "\t----------\n";    
             }
         }
-        relatory += "Algoritmo de substituição de páginas: Second Chance\n";
-        relatory += "Sequência de Requisição: ";
-        for(int i = 0; i < this.referenceString.length; i++) {
-            relatory += this.referenceString[i] + " ";
-        }
-        relatory += "\nTotal de Falhas de Página: " + this.pageFaults;
 
-        return relatory;
+        return report;
+    }
+
+    public String getResults() {
+        return this.report;
     }
 
     @Override

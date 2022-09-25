@@ -10,14 +10,14 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 
 
-public class RelatoryWindow extends JFrame{
+public class ReportWindow extends JFrame{
     
     private JPanel mainPanel;
     private JTextArea textArea;
     private JScrollPane scrollPane;
     private Window window;
 
-    public RelatoryWindow(Window window) {
+    public ReportWindow(Window window) {
         this.initWindow();
         this.initComponent();
         this.pack();
